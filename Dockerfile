@@ -3,17 +3,13 @@
 
 FROM ubuntu:xenial
 
-# Setup latest Firefox PPA
-RUN echo 'deb http://ppa.launchpad.net/mozillateam/firefox-next/ubuntu xenial main' > /etc/apt/sources.list.d/mozillateam-firefox-next-xenial.list
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE49EC21 
-
 # Install Ubuntu packages, libaio is required for Oracle drivers
 # (as each RUN commits the layer to image, need to chain commands and
 # clean up in the end to keep the image small)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
-        firefox \
+        firefox=45* \
         libaio1 libaio-dev \
         python-certifi \
         python-psycopg2 \
