@@ -1,4 +1,4 @@
-# Dockerfile with Python, Selenium, Firefox, XVFB, Requests and Records with
+# Dockerfile with Python, Selenium, Chrome, XVFB, Requests and Records with
 # PostgreSQL and Oracle support
 
 FROM ubuntu:xenial
@@ -9,7 +9,7 @@ FROM ubuntu:xenial
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
-        firefox=45* \
+        unzip \
         libaio1 libaio-dev \
         python-certifi \
         python-psycopg2 \
@@ -17,6 +17,14 @@ RUN apt-get update && \
         xvfb && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists
+
+# Install chromdriver
+RUN mkdir /root/chromedriver && cd /root/chromedriver && \
+    curl -O http://chromedriver.storage.googleapis.com/2.23/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip && \
+    chmod +x chromedriver && \
+    mv chromedriver /usr/local/bin && \
+    rm chromedriver_linux64.zip
 
 # Install Oracle drivers for Records, see README in debs/
 RUN mkdir /root/debs && cd /root/debs && \
@@ -31,8 +39,13 @@ ENV LD_LIBRARY_PATH /usr/lib/oracle/12.1/client64/lib
 RUN echo "/usr/lib/oracle/12.1/client64/lib" > /etc/ld.so.conf.d/oracle.conf
 RUN ldconfig
 
-# Install Python packages
-RUN apt-get update && \
+# Install Chrome and Python packages
+RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/chrome.list && \
+    curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    mkdir -p /usr/share/icons/hicolor && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        google-chrome-stable && \
     apt-get install -y \
         python-pip && \
     pip install \
